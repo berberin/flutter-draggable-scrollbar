@@ -43,6 +43,9 @@ class DraggableScrollbar extends StatefulWidget {
   /// Build a Text widget from the current offset in the BoxScrollView
   final LabelTextBuilder? labelTextBuilder;
 
+  /// Function trigger with offset similar to [labelTextBuilder]
+  final Function(double offsetY)? onDrag;
+
   /// Determines box constraints for Container displaying label
   final BoxConstraints? labelConstraints;
 
@@ -65,6 +68,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
     this.labelTextBuilder,
     this.labelConstraints,
+    this.onDrag,
   })  : assert(controller != null),
         assert(scrollThumbBuilder != null),
         assert(child.scrollDirection == Axis.vertical),
@@ -83,6 +87,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
     this.labelTextBuilder,
     this.labelConstraints,
+    this.onDrag,
   })  : assert(child.scrollDirection == Axis.vertical),
         scrollThumbBuilder =
             _thumbRRectBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
@@ -101,6 +106,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
     this.labelTextBuilder,
     this.labelConstraints,
+    this.onDrag,
   })  : assert(child.scrollDirection == Axis.vertical),
         scrollThumbBuilder =
             _thumbArrowBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
@@ -119,6 +125,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
     this.labelTextBuilder,
     this.labelConstraints,
+    this.onDrag,
   })  : assert(child.scrollDirection == Axis.vertical),
         scrollThumbBuilder = _thumbSemicircleBuilder(
             heightScrollThumb * 0.6, scrollThumbKey, alwaysVisibleScrollThumb),
@@ -513,6 +520,10 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
         widget.controller.jumpTo(_viewOffset);
       }
     });
+
+    if (widget.onDrag != null && _isDragInProcess) {
+      widget.onDrag!(_viewOffset + _barOffset + widget.heightScrollThumb / 2);
+    }
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
@@ -617,7 +628,8 @@ class SlideFadeTransition extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (context, child) => animation.value == 0.0 ? Container() : child!,
+      builder: (context, child) =>
+          animation.value == 0.0 ? Container() : child!,
       child: SlideTransition(
         position: Tween(
           begin: Offset(0.3, 0.0),
